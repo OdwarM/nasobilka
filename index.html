@@ -71,16 +71,29 @@
       font-size: 0.85rem;
       color: #475569;
     }
+    .stats {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f1f5f9;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    .stats span {
+      font-weight: 700;
+      margin: 0 6px;
+    }
+    #resetBtn {
+      margin-top: 10px;
+      background: #f59e0b;
+    }
   </style>
 </head>
 <body>
   <div class="card" role="main" aria-labelledby="title">
     <h1 id="title">Malá násobilka — trénink</h1>
 
-    <!-- Odkaz, který "spustí" (nebo zobrazí) úlohu -->
     <a id="startLink" href="#" role="button">Nový příklad</a>
 
-    <!-- Sekce s příkladem -->
     <div id="exerciseArea" aria-live="polite" style="display:none;">
       <div class="problem" id="problemText" aria-atomic="true"></div>
 
@@ -92,11 +105,17 @@
 
       <div class="message" id="message"></div>
       <div class="small">Stiskni Enter pro odeslání odpovědi.</div>
+
+      <!-- Nová část – počítadlo -->
+      <div class="stats">
+        ✅ Správně: <span id="correctCount">0</span> |
+        ❌ Špatně: <span id="wrongCount">0</span><br>
+        <button id="resetBtn">Resetuj počítadlo</button>
+      </div>
     </div>
   </div>
 
   <script>
-    // Rozsah malá násobilka: 1..10 (můžeš upravit)
     const MIN = 1;
     const MAX = 10;
 
@@ -106,12 +125,20 @@
     const answerInput = document.getElementById('answerInput');
     const checkBtn = document.getElementById('checkBtn');
     const message = document.getElementById('message');
+    const correctCountEl = document.getElementById('correctCount');
+    const wrongCountEl = document.getElementById('wrongCount');
+    const resetBtn = document.getElementById('resetBtn');
 
     let currentA = 1;
     let currentB = 1;
     let autoNextTimer = null;
+    let correctCount = 0;
+    let wrongCount = 0;
 
-    // Vygeneruje náhodný příklad z malé násobilky
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     function generateProblem() {
       currentA = getRandomInt(MIN, MAX);
       currentB = getRandomInt(MIN, MAX);
@@ -124,35 +151,30 @@
       answerInput.focus();
     }
 
-    function getRandomInt(min, max) {
-      // včetně min i max
-      return Math.floor(Math.random() * (max - min + 1)) + min;
+    function updateStats() {
+      correctCountEl.textContent = correctCount;
+      wrongCountEl.textContent = wrongCount;
     }
 
-    // Kontrola odpovědi
     function checkAnswer() {
-      // zamezit opakovanému kliknutí
       if (checkBtn.disabled) return;
-
       const userVal = answerInput.value.trim();
       if (userVal === '') {
-        // prázdné vstupy necháme bez akce, nebo můžeme upozornit
         message.textContent = 'Zadej výsledek.';
         message.className = 'message wrong';
         return;
       }
-
       const numeric = Number(userVal);
       const correct = currentA * currentB;
 
-      // disable input while waiting na další příklad
       answerInput.disabled = true;
       checkBtn.disabled = true;
 
       if (Number.isNaN(numeric)) {
         message.textContent = 'Neplatné číslo.';
         message.className = 'message wrong';
-        // po 3s nový příklad
+        wrongCount++;
+        updateStats();
         scheduleNext(3000);
         return;
       }
@@ -160,12 +182,14 @@
       if (numeric === correct) {
         message.textContent = 'Správně! 🎉';
         message.className = 'message correct';
-        // po 1s další příklad
+        correctCount++;
+        updateStats();
         scheduleNext(1000);
       } else {
         message.textContent = `Špatně — správně je ${correct}.`;
         message.className = 'message wrong';
-        // po 3s další příklad
+        wrongCount++;
+        updateStats();
         scheduleNext(3000);
       }
     }
@@ -177,10 +201,16 @@
       }, delayMs);
     }
 
-    // Ovládání odkazu "Nový příklad"
+    function resetStats() {
+      correctCount = 0;
+      wrongCount = 0;
+      updateStats();
+      message.textContent = 'Počítadlo bylo vynulováno.';
+      message.className = 'message';
+    }
+
     startLink.addEventListener('click', (ev) => {
       ev.preventDefault();
-      // zobrazit oblast s příkladem pokud skrytá
       if (exerciseArea.style.display === 'none') {
         exerciseArea.style.display = '';
       }
@@ -188,10 +218,9 @@
       generateProblem();
     });
 
-    // tlačítko Zkontroluj
     checkBtn.addEventListener('click', checkAnswer);
+    resetBtn.addEventListener('click', resetStats);
 
-    // Enter v inputu = submit
     answerInput.addEventListener('keydown', (ev) => {
       if (ev.key === 'Enter') {
         ev.preventDefault();
@@ -199,12 +228,11 @@
       }
     });
 
-    // Při načtení stránky je vidět jen odkaz
     (function init() {
       exerciseArea.style.display = 'none';
+      updateStats();
     })();
 
-    // přístupnost: skrytý label pro screenreadery
     (function addSRStyle() {
       const style = document.createElement('style');
       style.textContent = '.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}';
@@ -213,6 +241,7 @@
   </script>
 </body>
 </html>
+
 
 
 
