@@ -117,7 +117,7 @@
 
   <script>
     const MIN = 1;
-    const MAX = 10;
+    const MAX = 20;
 
     const startLink = document.getElementById('startLink');
     const exerciseArea = document.getElementById('exerciseArea');
@@ -186,7 +186,7 @@
         updateStats();
         scheduleNext(1000);
       } else {
-        message.textContent = `Špatně — správně je ${correct}.`;
+        message.textContent = `To si děláš prdel? — správně je ${correct}.`;
         message.className = 'message wrong';
         wrongCount++;
         updateStats();
@@ -241,6 +241,7 @@
   </script>
 </body>
 </html>
+
 
 
 
